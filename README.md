@@ -1,1 +1,1 @@
-# DicomMWLProject
+# Dicom Container Project
