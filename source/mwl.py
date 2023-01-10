@@ -1,65 +1,46 @@
 # Import libraries
 from pydicom.dataset import Dataset, FileMetaDataset
 from pydicom.uid import ExplicitVRLittleEndian
-
 from pynetdicom import AE, evt
 from pynetdicom.sop_class import ModalityWorklistInformationFind
+from datetime import date
 
 # Implement the handler for evt.EVT_C_FIND
 def handle_find(event):
+
      """Handle a C-FIND request event."""
      ds = event.identifier
 
-     # Import stored SOP Instances
-     instances = []
-
-     ds1 = Dataset()
+     # Create a MWL entry
+     mwl = Dataset()
 
     # Add file meta information elements
-     ds1.file_meta = FileMetaDataset()
-     ds1.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
-     ds1.file_meta.MediaStorageSOPClassUID = "0"
-     ds1.file_meta.MediaStorageSOPInstanceUID = "0"
+     mwl.file_meta = FileMetaDataset()
+     mwl.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+     mwl.file_meta.MediaStorageSOPClassUID = "1.2.276.0.7230010.3.1.0.1"
+     mwl.file_meta.MediaStorageSOPInstanceUID = "1.2.276.0.7230010.3.1.4.2831176407.11154.1448031138.805061"
+     mwl.file_meta.ImplementationClassUID = "1.2.276.0.7230010.3.0.3.6.0"
+     mwl.file_meta.ImplementationVersionName = "OFFIS_DCMTK_360"
 
-    # Fill out the worklist query elements
-     ds1.SpecificCharacterSet             = "ISO_IR 6"
-     ds1.InstanceCreationDate             = "20220101"
-     ds1.AccessionNumber                  = "12345-abc"
-     ds1.PatientName                      = "SURNAME^NAME"
-     ds1.PatientID                        = "123456"
-     ds1.PatientBirthDate                 = "19700101"
-     ds1.PatientSex                       = "M"
-     ds1.StudyInstanceUID                 = "1.45646.489451" 
-     ds1.RequestedProcedureDescription    = "ProcedureDescription"
-     ds1.ScheduledProcedureStepSequence   = [Dataset()]
-     ds1.ScheduledProcedureStepSequence[0].Modality                           = "OT"
-     ds1.ScheduledProcedureStepSequence[0].ScheduledStationAETitle            = "OT"
-     ds1.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartDate    = "20220101"
-     ds1.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartTime    = "080000"
-     ds1.ScheduledProcedureStepSequence[0].ScheduledPerformingPhysicianName   = "Doctor Emmet Brown"
-     ds1.ScheduledProcedureStepSequence[0].ScheduledProcedureStepDescription  = "SchedProcStepDesc"
-     ds1.ScheduledProcedureStepID         = "0001"
+    # Add data elements
+     #mwl.SpecificCharacterSet             = "ISO_IR 192"
+     mwl.AccessionNumber                  = "123456789"
+     mwl.PatientName                      = "SURNAME^NAME"
+     mwl.PatientID                        = "987654321"
+     mwl.OtherPatientIDs                  = "111111"
+     mwl.PatientBirthDate                 = "19700101"
+     mwl.PatientSex                       = "M"
+     mwl.StudyInstanceUID                 = "1.2.276.0.75.2.1.11.1.1.1667387252720.80" 
+     mwl.RequestedProcedureDescription    = "Ophthalmic examination and evaluation"
+     mwl.ScheduledProcedureStepSequence   = [Dataset()]
+     mwl.ScheduledProcedureStepSequence[0].Modality                           = "OP"
+     mwl.ScheduledProcedureStepSequence[0].ScheduledStationAETitle            = "ARGOS"
+     mwl.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartDate    = "20230110"
+     mwl.ScheduledProcedureStepSequence[0].ScheduledProcedureStepStartTime    = "080000"
+     mwl.ScheduledProcedureStepSequence[0].ScheduledPerformingPhysicianName   = "Doctor"
 
-     instances.append(ds1)
-
-     if 'PatientName' in ds:
-             if ds.PatientName not in ['*', '', '?']:
-                 matching = [
-                     inst for inst in instances if inst.PatientName == ds.PatientName
-                 ]
-
-     for instance in matching:
-
-        # Check if C-CANCEL has been received
-         if event.is_cancelled:
-             yield (0xFE00, None)
-             return
-         
-         identifier = Dataset()
-         identifier.PatientName = instance.PatientName
-
-         # Pending
-         yield (0xFF00, identifier)
+     # Pending
+     yield (0xFF00, mwl)
 
 handlers = [(evt.EVT_C_FIND, handle_find)]
 
