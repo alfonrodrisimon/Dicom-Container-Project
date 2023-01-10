@@ -23,9 +23,9 @@ def handle_find(event):
      mwl.file_meta.ImplementationVersionName = "OFFIS_DCMTK_360"
 
     # Add data elements
-     #mwl.SpecificCharacterSet             = "ISO_IR 192"
+     #mwl.SpecificCharacterSet             = "ISO_IR 100"
      mwl.AccessionNumber                  = "123456789"
-     mwl.PatientName                      = "SURNAME^NAME"
+     mwl.PatientName                      = "MARÍA^LÓPEZ"
      mwl.PatientID                        = "987654321"
      mwl.OtherPatientIDs                  = "111111"
      mwl.PatientBirthDate                 = "19700101"
