@@ -1,13 +1,11 @@
 import os, sys
 
 # Import libraries
-from pydicom.charset import encode_string
 from pydicom.dataset import Dataset, FileMetaDataset
-from pydicom.uid import ExplicitVRLittleEndian
 from pynetdicom import AE, evt
 from pynetdicom.sop_class import ModalityWorklistInformationFind
 from datetime import datetime
-from pydicom.uid import generate_uid
+from pydicom.uid import generate_uid,ExplicitVRLittleEndian
 
 # Implement the handler for evt.EVT_C_FIND
 def handle_find(event):
@@ -15,28 +13,16 @@ def handle_find(event):
      """Handle a C-FIND request event."""
      ds = event.identifier
 
-     # Get the query keys 
-     # query = ( elem for elem in ds.iterall() if not elem.is_empty ) # generator expression
-
-     # Generate response payload
-     response = Dataset()
-
-     
-
-     #for elem in response.iterall():
-      
-      #response.clear(elem.tag)
-     
-     # for elem in query:
-         # print(elem)
-
-     # Create instances
-     instances = []
-
+     # Function to DICOM Worklist entries
      def build_mwl_entry():
         
         ds = Dataset()
         
+        # Add file meta information elements
+        ds.file_meta = FileMetaDataset()
+        ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
+
+        # Fill out the worklist query elements
         ds.SpecificCharacterSet = 'ISO_IR 100'
         ds.AccessionNumber = '09876543'
         ds.PatientName = 'MARÍA^LÓPEZ'
@@ -56,10 +42,17 @@ def handle_find(event):
 
         return ds
 
-     response = build_mwl_entry()
+     # Create instances
+     instances = []
+     mwl = build_mwl_entry()
+     instances.append(mwl)
 
-     # Return all matches
-     yield (0xFF00, response)
+     matching = [inst for inst in instances if inst.ScheduledProcedureStepSequence[0].ScheduledStationAETitle == ds.ScheduledProcedureStepSequence[0].ScheduledStationAETitle] # generator expression
+
+     for instance in matching: 
+        
+        # Return all matches
+        yield (0xFF00, instance)
 
 handlers = [(evt.EVT_C_FIND, handle_find)]
 
