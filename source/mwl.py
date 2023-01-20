@@ -23,7 +23,7 @@ def handle_find(event):
         ds.file_meta.TransferSyntaxUID = ExplicitVRLittleEndian
 
         # Fill out the worklist query elements
-        ds.SpecificCharacterSet = 'ISO_IR 100'
+        #ds.SpecificCharacterSet = 'ISO_IR 100'
         ds.AccessionNumber = '09876543'
         ds.PatientName = 'MARÍA^LÓPEZ'
         ds.PatientID = '123456'
@@ -63,4 +63,4 @@ ae = AE()
 ae.add_supported_context(ModalityWorklistInformationFind)
 
 # Start listening for incoming association requests
-ae.start_server(("127.0.0.1", 11112), evt_handlers=handlers)
+ae.start_server(("0.0.0.0", 11113), evt_handlers=handlers)
